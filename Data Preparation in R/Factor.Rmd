@@ -1,1 +1,205 @@
+---
+title: "DQ - Data Preapration in Data Science using R - Factor"
+author: "Muhammad Hafizd Harkaputra"
+date: "2023-11-08"
+output: html_document
+---
 
+## Apa Itu Factor?
+
+**Factor** adalah suatu variable di R yang menyimpan daftar nilai-nilai kategori atau nominal. Berikut adalah beberapa contoh daftar nilai kategori yang bisa disimpan dalam factor:
+
+-   Nama bulan: Januari, Februari, Maret.
+
+-   Jenis pakaian: Atasan, Jeans, Rok, Kaos.
+
+-   Satuan berat: kg, mg, ton, kwintal.
+
+-   dan lain-lain.
+
+Dengan demikian, factor menyimpan nilai-nilai yang terbatas (**diskrit**). Nama bulan terdiri dari 12 nilai yaitu dari Januari s/d Desember.
+
+Jika tidak terbatas atau kontinu, misalkan angka berat seperti 64.5 kg, 11.2 kg, 80.39 kg, dan seterusnya -- maka ini tidak bisa digolongkan sebagai *factor*.
+
+Karena sifat data dengan nilai terbatas ini, factor sering disebut juga sebagai *categorical variable* atau **variabel kategorik**.
+
+Factor dapat dibuat di R dengan function **factor**, dengan syntax paling sederhana sebagai berikut:
+
+```{r setup, include=FALSE}
+factor(c("Jan","Feb","Mar"))
+```
+
+Terlihat ada dua hasil, yaitu nilai yang dimasukkan dan ada satu lagi output **Levels**. Berikut adalah penjelasan dari hasil di atas
+
++---------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Hasil               | Keterangan                                                                                                                                                                                                     |
++=====================+================================================================================================================================================================================================================+
+| [1] Jan Feb Mar     | **[1]** adalah tampilan output dengan hasil tampilan dimulai pada indeks ke 1                                                                                                                                  |
+|                     |                                                                                                                                                                                                                |
+|                     | **Jan Feb Mar**adalah tampilan dari nilai factor                                                                                                                                                               |
++---------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Levels: Feb Jan Mar | Levels: adalah atribut yang menempel pada setiap faktor dan berisi daftar diskrit dari variasi nilai-nilai yang terdapat pada faktor. \                                                                        |
+|                     | \                                                                                                                                                                                                              |
+|                     | Untuk kasus ini terdapat tiga nilai variasi yaitu Feb Jan Mar -- dan **kebetulan**sama dengan jumlah nilai yang terdapat pada factor saat ini, tetapi dengan urutan yang berbeda dengan tampilan isian factor. |
+|                     |                                                                                                                                                                                                                |
+|                     | Pada levels, terlihat Feb dimulai duluan dibandingkan Jan karena secara urutan alfabet pertama pada Feb -- yaitu F -- lebih kecil dibandingkan alfabet pertama pada Jan -- yaitu J.                            |
++---------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+## Atribut levels dan class pada Factor
+
+Perbandingan yang kontras antara factor dengan vector atau data.frame adalah pada factor terdapat atribut tambahan, yaitu levels.
+
+Atribut sendiri adalah variable yang melekat dan menjadi bagian dari objek atau variable lain.
+
+Selain atribut levels, pada factor terdapat juga atribut class.
+
+Untuk melihat seluruh atribut pada kita menggunakan function attributes, berikut adalah contoh penggunaannya.
+
+```{r}
+faktor.bulan <- factor(c("Jan","Feb","Mar"))
+attributes(faktor.bulan)
+```
+
+Dimana hasilnya terdapat dua atribut, yaitu **levels** dan **class** (ditandai dengan tanda \$ pada nama atribut di depannya) dengan nilai-nilai atributnya (perhatikan semua memiliki tanda kutip pada nilainya -- yang menandakan nilainya berupa karakter atau teks).
+
+## Function levels dan class pada Factor
+
+Atribut levels dan class dapat juga dilihat dengan function levels dan class dengan input berupa factor, dengan konstruksi sebagai berikut:
+
+```{r}
+levels(faktor.bulan)
+class(faktor.bulan)
+```
+
+## Perulangan Nilai pada Factor
+
+Jika pada praktek sebelumnya, factor diisi dengan tiga contoh nilai nama bulan pertama yang tidak berulang. Pada praktek kali ini kita coba akan memasukkan nilai yang berulang, dimana "Jan" dan "Mar" akan dimasukkan berulang.
+
+```{r}
+factor(c("Jan","Feb","Mar","Jan","Mar","Jan"))
+```
+
+Berikut adalah penjelasan hasilnya.\\
+
++-----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+
+| Hasil                       | Keterangan                                                                                                                              |
++=============================+=========================================================================================================================================+
+| [1] Jan Feb Mar Jan Mar Jan | **[1]** adalah tampilan output dengan hasil tampilan dimulai pada indeks ke 1                                                           |
+|                             |                                                                                                                                         |
+|                             | **Jan Feb Mar Jan Mar Jan** adalah tampilan dari nilai-nilai factor                                                                     |
++-----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+
+| Levels: Feb Jan Mar         | Levels: adalah atribut yang menempel pada setiap faktor dan berisi daftar diskrit dari variasi nilai-nilai yang terdapat pada faktor. \ |
+|                             | \                                                                                                                                       |
+|                             | Variasi nilainya masih sama, yaitu tiga (Feb Jan Mar).                                                                                  |
++-----------------------------+-----------------------------------------------------------------------------------------------------------------------------------------+
+
+## Bagaimana sebenarnya Factor disimpan?
+
+Di "belakang layar", factor sebenarnya memiliki 2 bagian:
+
+-   Vector yang berisi nilai angka bulat (integer).
+
+-   Vector yang berisi nilai-nilai kategori, ini disimpan dalam atribut levels -- isinya selalu bertipe character / teks.
+
+![](images/Screenshot%202023-11-08%20at%2023.14.10.png){width="534"}
+
+Penjelasan dari proses di atas:
+
+1.  R menerima perintah dengan function factor(c("Jan","Feb","Mar","Jan","Mar"))
+
+2.  R akan mencari variasi nilai (levels) dan diurutkan -- dalam hal ini pengurutan alfabet -- dan dipetakan berdasarkan index yang bernilai integer.Disini nilai index 1 mewakili "Feb", 2 mewakili "Jan", dan 3 mewakili "Mar"
+
+3.  Dari levels, nilai-nilai "Jan", "Feb", "Mar","Jan","Mar" dicari nilai index-nya dan dimasukkan sebagai nilai-nilai pada factor ( 2, 1, 3, 2, 3).
+
+Dengan demikian, kita simpulkan kembali dari ilustrasi di atas bahwa nilai dari factor sebenarnya adalah nilai bilangan bulat (integer) dengan nilai-nilai kategoris disimpan pada atribut **levels**.
+
+## Penggunaan as.integer pada Factor
+
+Untuk mengambil nilai-nilai index integer pada factor, kita bisa menggunakan function as.integer dengan syntax berikut.
+
+```{r}
+factor.bulan <- factor(c("Jan","Feb","Mar","Jan","Mar","Jan"))
+as.integer(factor.bulan)
+```
+
+## Mengganti "Jan" menjadi "Januari"
+
+Sering sekali nilai kategori tidak sesuai dengan yang kita inginkan, sebagai contoh kita ingin nilai "Jan" ditampilkan sebagai "Januari". Di factor, kita lakukan ini dengan mengganti nilai levels pada index yang kita inginkan.
+
+Mari kita perhatikan contoh faktor berikut. Terdapat satu variabel factor.bulan dengan levels "Feb", "Jan", dan "Mar".
+
+```{r}
+factor.bulan <- factor(c("Jan","Feb","Mar","Jan","Mar","Jan"))
+#Mengganti levels 
+levels(factor.bulan)[2] <- "Januari"
+levels(factor.bulan)[3] <- "Maret"
+factor.bulan
+```
+
+## Angka sebagai Kategori
+
+Jika angka dimasukkan ke dalam vector, tetap akan dikenal sebagai nilai kategoris dan dimasukkan ke dalam levels. Dan karena itu angka akan dikonversi menjadi teks.
+
+```{r}
+#Buatlah factor bernama factor.umur dengan isi c(12, 35, 24, 12, 35, 37)
+factor.umur <- factor(c(12,35,24,12,35,37))
+#Tampilkan variable factor.umur 
+factor.umur
+```
+
+## Na, NaN, dan NULL pada saat pembentukan Factor
+
+Jika ketiganya dimasukkan ke dalam factor melalui deklarasi vector, maka prinsip berikut tetap berlaku:
+
+-   Na dan NaN akan menjadi bagian dari isi factor, NULL akan dihilangkan
+
+-   Hanya NaN yang akan dikenali sebagai levels
+
+```{r}
+factor.lokasi <- factor(c("Bandung","Jakarta", NA,"Jakarta",NaN,"Medan", NULL, NULL, "Bandung"))
+#Tampilkan factor.lokasi
+factor.lokasi
+```
+
+Terlihat nilai NULL dibuang di tampilan isi factor, kemudian pada levels nilai NA juga dibuang.
+
+## Menghitung panjang Factor dengan Length
+
+Panjang factor dapat dihitung dengan menggunakan function length dengan syntax sederhana berikut.
+
+```{r}
+factor.lokasi <- factor(c("Bandung", "Jakarta", NA, "Jakarta", NaN, "Medan", NULL, NULL, "Bandung"))
+#Tampilkan panjang dari variable factor.lokasi
+length(factor.lokasi)
+```
+
+Hanya nilai NULL yang tidak terhitung sebagai bagian dari factor.
+
+## Menyusun Levels dari awal
+
+Sejauh ini factor yang kita buat seakan-akan hanya bisa dirubah isinya, namun bukan urutannya. Ini kita bisa kendalikan juga dengan memberikan nilai-nilai kategori sesuai urutan yang kita inginkan pada argumen levels di function factors.
+
+```{r}
+factor(c("Jan","Feb","Mar","Jan","Mar"), levels = c("Jan","Feb","Mar"))
+```
+
+Dengan ini, "Jan" langsung menjadi levels pertama, bukan "Feb".
+
+## Kesimpulan
+
+\
+Dari praktek keseluruhan yang telah dilakukan, kita telah mencapai tujuan untuk mempelajari factor dari aspek berikut:
+
+-   Apa itu factor dan kenapa diperlukan?
+
+-   Kapan factor digunakan
+
+-   Cara membuat factor di R
+
+-   Bagaimana sebenarnya nilai disimpan di dalam factor
+
+-   Menggunakan function untuk merubah nilai factor
+
+-   Merubah pengurutan di factor
+
+Dengan menguasai keterampilan menggunakan factor ini, Anda sudah lebih siap untuk melakukan banyak hal di R.
