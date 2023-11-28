@@ -1,0 +1,227 @@
+---
+title: "Market Basket Analysis"
+author: "Muhammad Hafizd Harkaputra"
+date: "2023-11-28"
+output: html_document
+---
+
+**Algoritma apriori** adalah salah satu algoritma yang merupakan penerapan praktis dari Market Basket Analysis (MBA). Secara teknis, algoritma apriori akan mencari tingkat asosiasi antar item di dalam banyak kombinasi kelompok data secara otomatis. Kombinasi ini juga bisa disusun dengan suatu aturan (rule) asosiasi "Jika membeli ini produk A maka akan membeli produk B", sehingga algoritma ini dikategorikan sebagai *Association Rules* di ranah *machine learning*.
+
+![](images/Screenshot%202023-11-28%20at%2021.49.33.png){width="411"}
+
+Output ini adalah tampilan dari dataset yang berjumlah sepuluh transaksi, dengan dua kolom yang terdiri dari:
+
+-   Kolom pertama adalah itemset yang berisi item-item yang dibeli pada transaksi tertentu.
+
+-   Kolom kedua berisi kode struk transaksi yang menjadi penanda unik untuk tiap transaksi.
+
+# Library
+
+```{r}
+library(arules)
+```
+
+# Membaca File Sebagai Transactions
+
+```{r}
+read.transactions(file="https://storage.googleapis.com/dqlab-dataset/data_transaksi.txt", format="single", sep="\t", cols=c(1,2), skip=1)
+
+```
+
+-   **format**: Format bisa "**single**" atau "**basket**".
+
+    -   "single" artinya tiap item transaksi dituliskan terpisah baris demi baris, dan ini cocok dengan format dari file kita.
+
+    -   "basket" artinya seluruh item per transaksi ditulis per baris.
+
+-   **sep**: *separator character atau karakter pemisah antar kolom, untuk file ini karakter pemisahnya adalah tab atau dalam notasi di R ditulis dengan "**\\t**".*
+
+-   **cols**: indeks dari kolom-kolom yang digunakan.
+
+-   **skip**: jumlah baris yang dilewati sebelum mulai membaca data.
+
+# Menampilkan Daftar Item Transaksi
+
+```{r}
+transaksi <- read.transactions(file="https://storage.googleapis.com/dqlab-dataset/data_transaksi.txt", format="single", sep="\t", cols=c(1,2), skip=1)
+transaksi
+transaksi@itemInfo
+```
+
+Terlihat ada empat item yang terdapat di seluruh data transaksi kita, yaitu **Gula**, **Pet Food**, **Sirup** dan **Teh Celup**.
+
+# Menampilkan Daftar Kode Transaksi
+
+```{r}
+transaksi@itemsetInfo
+```
+
+Terlihat ada sepuluh kode transaksi di seluruh transaksi kita yaitu kode **#01** sampai dengan **#10**.
+
+# Tampilan Transaksi dalam Bentuk Matriks
+
+```{r}
+transaksi@data
+```
+
+-   **4 x 10** :  artinya terdapat 4 item dan 10 transaksi.
+
+-   **[1,]** s/d **[4,]** : artinya index yang mewakili tiap item dalam transaksi. Index ini sebenarnya mencerminkan urutan dari hasil dari subbab "Menampilkan Daftar Item Transaksi" sebagai berikut:\
+
+                labels
+        1         Gula
+        2     Pet Food
+        3        Siru
+        4    Teh Celup
+
+    dengan demikian, item Gula diwakili [1,], Pet Food diwakili [2,], dan seterusnya.
+
+-   Simbol tanda titik **.**  menunjukkan item tidak ada di transaksi.
+
+-   Simbol garis lurus **\|**  menunjukkan bahwa item ada di transaksi.
+
+# Item Frequency
+
+```{r}
+itemFrequency(transaksi)
+```
+
+Hasil ini menunjukkan bahwa frekuensi kemunculan Gula adalah 0.4 atau 40 persen dari porsi seluruh transaksi yang ada, Pet Food menempati 50 persen, dan seterusnya.
+
+```{r}
+itemFrequency(transaksi, type="absolute")
+```
+
+Tampilan dalam bentuk jumlah
+
+# Statistik Top 3
+
+```{r}
+data_item <- itemFrequency(transaksi, type="absolute") 
+data_item <- sort(data_item, decreasing = TRUE) #melakukan sorting data
+data_item <- data_item[1:3] #mengambil tiga item pertama
+
+#Konversi data_item menjadi data frame dengan kolom Nama_Produk dan Jumlah
+data_item <- data.frame("Nama Produk"=names(data_item), "Jumlah"=data_item, row.names=NULL)
+data_item
+
+```
+
+# Output Sebagai File
+
+```{r}
+write.csv(data_item, file="top3_item_retail.txt", eol = "\r\n")
+```
+
+# Grafik Item Frequency
+
+```{r}
+itemFrequencyPlot(transaksi)
+```
+
+# Melihat Itemset per Transaksi dengan Inspect
+
+```{r}
+inspect(transaksi)
+```
+
+# Menghasilkan Rules dengan Apriori
+
+```{r}
+apriori(transaksi)
+```
+
+Banyak sekali informasi dari output yang dihasilkan. Namun untuk saat ini, perhatikan baris terakhir dimana tertulis "set of 3 rules". Ini artinya dengan fungsi apriori ini, kita mendapatkan tiga rules. 
+
+# Melihat Rules dengan Fungsi Inspect
+
+```{r}
+mba <- apriori(transaksi)
+inspect(mba)
+```
+
+Terlihat kalau variable **mba** menyimpan tiga rules dengan kolom-kolom berikut:
+
+-   **lhs**: itemset di bagian kiri (left hand side)
+
+-   **rhs**: itemset di bagian kanan (right hand side)
+
+-   **support, confidence dan lift**: metrik-metrik yang digunakan untuk menilai kualitas dari rule. Umumnya semakin besar semakin baik.
+
+# Filter RHS
+
+```{r}
+inspect(subset(mba, rhs %in% "Sirup"))
+```
+
+Ini artinya kita akan filter rules dimana pada rhs memiliki item "Sirup".
+
+# Filter LHS
+
+```{r}
+inspect(subset(mba, lhs %in% "Gula"))
+```
+
+Berikut adalah contoh perintah inspect untuk filter lhs dengan item Gula.
+
+# Filter LHS dan RHS
+
+```{r}
+inspect(subset(mba, lhs %in% "Pet Food" & rhs %in% "Sirup"))
+```
+
+# Menghasilkan Rules dengan Parameter Support dan Confidence
+
+```{r}
+apriori(transaksi,parameter = list(supp = 0.1, confidence = 0.5))
+```
+
+Tanpa parameter tambahan tersebut, maka nilai minimum support adalah 0.1 dan minimum confidence adalah 0.8 sebagai filter dari function apriori.
+
+Perhatikan pada akhir baris output, terdapat 16 rule. Lebih banyak dibandingkan eksekusi perintah apriori sebelumnya yang hanya menghasilkan 3 rule.
+
+# Inspeksi Rules yang Dihasilkan
+
+```{r}
+mba <- apriori(transaksi,parameter = list(supp = 0.1, confidence = 0.5))
+inspect(mba)
+```
+
+# Filter LHS dan RHS (2)
+
+```{r}
+inspect(subset(mba,lhs%in%"Teh Celup"|rhs%in%"Teh Celup"))
+```
+
+Dengan 16 rules yang dihasilkan, kita bisa memiliki lebih banyak pilihan untuk melakukan filter lhs dan rhs seperti yang telah ditunjukkan pada bab Itemset and Rules.
+
+Berikut adalah contoh untuk filter dimana lhs atau rhs keduanya memiliki item Teh Celup.
+
+# Filter Berdasarkan Lift
+
+```{r}
+inspect(subset(mba, (lhs%in%"Teh Celup"|rhs%in%"Teh Celup")& lift>1))
+```
+
+-   lhs atau rhs memiliki Teh Celup
+
+-   lift di atas 1
+
+Hanya terdapat 1 rule sebagai hasil filter dan paket produk ini cukup menjanjikan, dimana Teh Celup menjadi komponen dari itemset di lhs.
+
+```{r}
+inspect(subset(mba, (lhs%ain%c("Pet Food","Gula"))))
+```
+
+Operator %in% yang sebelumnya kita gunakan sudah efektif. Namun operator ini tidak cocok jika kita ingin melakukan filter itemset dengan logika AND. Artinya seluruh item harus muncul dalam itemset yang terpilih. Untuk keperluan tersebut, gunakan operator %ain%.
+
+Hanya terdapat 1 rule sebagai hasil filter, dan dengan lift di atas 1 dan support 0.1 (10%) rule ini bisa dianggap layak untuk meghasilkan rekomendasi item, yaitu Sirup. Jadi orang yang membeli Gula dan Pet Food, bisa ditawarin Sirup.
+
+```{r}
+library(arulesViz)
+plot(subset(mba, lift>1.1), method="graph")
+```
+
+Lingkaran disini adalah titik pertemuan (asosiasi) dari item-item yang ada, dimana terdapat tanda panah sebagai garis penghubungnya. Tiap Item disini berupa teks.
+
+Besarnya bulatan menunjukkan popularitas, dan intensitas warna menunjukkan lift. Terlihat disini Gula ke Sirup, dan Pet Food ke Sirup memiliki lift yang relatif tinggi tapi supportnya tidak terlalu besar.
